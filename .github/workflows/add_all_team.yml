@@ -1,0 +1,32 @@
+name: Add 'All' Team to New Repositories
+
+on:
+  create:
+    types:
+      - repository
+
+jobs:
+  add_all_team:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Add 'All' Team
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const payload = {'permission': 'pull'};
+            if (context.eventName === "create" && context.payload.repository) {
+              const repoFullName = context.payload.repository.full_name;
+              const endpt = `https://api.github.com/teams/2981406/repos/${repoFullName}`;
+              const response = await github.request('PUT ' + endpt, {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/vnd.github.hellcat-preview+json'
+                },
+                data: JSON.stringify(payload)
+              });
+              console.log(response);
+            }
