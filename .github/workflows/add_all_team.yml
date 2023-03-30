@@ -14,7 +14,7 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const orgName = '{YOUR_ORG_NAME}';
+            const orgName = '{ecohealthalliance}';
             const teamName = 'All';
             const teams = await github.paginate(github.rest.teams.list, { org: orgName });
             const targetTeam = teams.find(team => team.name === teamName);
@@ -33,7 +33,7 @@ jobs:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             const teamId = ${{ steps.get_team_id.outputs.id }};
-            const orgName = '{YOUR_ORG_NAME}';
+            const orgName = '{ecohealthalliance}}';
             const teamRepos = await github.paginate(github.rest.teams.listRepos, { team_id: teamId });
             const orgRepos = await github.paginate(github.rest.repos.listForOrg, { org: orgName });
 
