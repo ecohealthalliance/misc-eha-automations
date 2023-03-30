@@ -1,8 +1,8 @@
 name: Add 'All' Team to New Repositories
 
 on:
-  create:
-    types: [repository]
+  schedule:
+    - cron: "* * * * *"
 
 jobs:
   add_all_team:
@@ -14,7 +14,7 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const orgName = '{ecohealthalliance}';
+            const orgName = '{YOUR_ORG_NAME}';
             const teamName = 'All';
             const teams = await github.paginate(github.rest.teams.list, { org: orgName });
             const targetTeam = teams.find(team => team.name === teamName);
@@ -26,21 +26,30 @@ jobs:
               return { id: null };
             }
 
-      - name: Add 'All' Team
+      - name: Add 'All' Team to New Repos
         if: steps.get_team_id.outputs.id != null
         uses: actions/github-script@v5
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             const teamId = ${{ steps.get_team_id.outputs.id }};
-            const repoFullName = context.payload.repository.full_name;
-            const endpt = `https://api.github.com/teams/${teamId}/repos/${repoFullName}`;
-            const payload = { permission: 'pull' };
-            const response = await github.request('PUT ' + endpt, {
-              headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/vnd.github.hellcat-preview+json'
-              },
-              data: JSON.stringify(payload)
-            });
-            console.log(response);
+            const orgName = '{YOUR_ORG_NAME}';
+            const teamRepos = await github.paginate(github.rest.teams.listRepos, { team_id: teamId });
+            const orgRepos = await github.paginate(github.rest.repos.listForOrg, { org: orgName });
+
+            const teamRepoNames = teamRepos.map(repo => repo.full_name);
+            const newRepos = orgRepos.filter(repo => !teamRepoNames.includes(repo.full_name));
+
+            for (const repo of newRepos) {
+              const repoFullName = repo.full_name;
+              const endpt = `https://api.github.com/teams/${teamId}/repos/${repoFullName}`;
+              const payload = { permission: 'pull' };
+              const response = await github.request('PUT ' + endpt, {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/vnd.github.hellcat-preview+json'
+                },
+                data: JSON.stringify(payload)
+              });
+              console.log(`Added 'All' team to ${repoFullName}`);
+            }
