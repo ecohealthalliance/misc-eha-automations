@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Get Team ID
         id: get_team_id
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           github-token: ${{secrets.PAT}}
           script: |
@@ -29,7 +29,7 @@ jobs:
 
       - name: Add 'All' Team to New Repos
         if: steps.get_team_id.outputs.id != null
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           github-token: ${{secrets.PAT}}
           script: |
