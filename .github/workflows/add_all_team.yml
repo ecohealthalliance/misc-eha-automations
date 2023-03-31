@@ -8,48 +8,35 @@ jobs:
   add_all_team:
     runs-on: ubuntu-latest
     steps:
-      - name: Get Team ID
-        id: get_team_id
+      - name: Add 'All' Team to New Repos
         uses: actions/github-script@v5
         with:
-          github-token: ${{secrets.PAT}}
           script: |
+            const { Octokit } = require('@octokit/core');
+            const octokit = new Octokit({ auth: "${{ secrets.PAT }}" });
+
             const orgName = 'ecohealthalliance';
             const teamName = 'All';
-            const teams = await github.paginate(github.rest.teams.list, { org: orgName });
+
+            const { data: teams } = await octokit.request('GET /orgs/{org}/teams', { org: orgName });
             const targetTeam = teams.find(team => team.name === teamName);
-            if (targetTeam) {
-              console.log(`Team ID for "${teamName}" is: ${targetTeam.id}`);
-              return { id: targetTeam.id };
-            } else {
+            if (!targetTeam) {
               console.log(`Team "${teamName}" not found.`);
-              return { id: null };
+              return;
             }
 
-      - name: Add 'All' Team to New Repos
-        if: steps.get_team_id.outputs.id != null
-        uses: actions/github-script@v5
-        with:
-          github-token: ${{secrets.PAT}}
-          script: |
-            const teamId = ${{ steps.get_team_id.outputs.id }};
-            const orgName = 'ecohealthalliance';
-            const teamRepos = await github.paginate(github.rest.teams.listRepos, { team_id: teamId });
-            const orgRepos = await github.paginate(github.rest.repos.listForOrg, { org: orgName });
+            const { data: orgRepos } = await octokit.request('GET /orgs/{org}/repos', { org: orgName });
 
-            const teamRepoNames = teamRepos.map(repo => repo.full_name);
-            const newRepos = orgRepos.filter(repo => !teamRepoNames.includes(repo.full_name));
-
-            for (const repo of newRepos) {
-              const repoFullName = repo.full_name;
-              const endpt = `https://api.github.com/teams/${teamId}/repos/${repoFullName}`;
-              const payload = { permission: 'pull' };
-              const response = await github.request('PUT ' + endpt, {
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/vnd.github.hellcat-preview+json'
-                },
-                data: JSON.stringify(payload)
-              });
-              console.log(`Added 'All' team to ${repoFullName}`);
+            for (const repo of orgRepos) {
+              try {
+                await octokit.request('PUT /teams/{team_id}/repos/{owner}/{repo}', {
+                  team_id: targetTeam.id,
+                  owner: repo.owner.login,
+                  repo: repo.name,
+                  permission: 'pull'
+                });
+                console.log(`Added 'All' team to ${repo.full_name}`);
+              } catch (error) {
+                console.error(`Failed to add 'All' team to ${repo.full_name}: ${error.message}`);
+              }
             }
