@@ -7,13 +7,16 @@ provider:
   region: "us-east-1"
   environment:
     GITHUB_TOKEN: ${ssm:/GITHUB_TOKEN}
+    GITHUB_WEBHOOK_SECRET: ${ssm:/GITHUB_WEBHOOK_SECRET}
   iam:
     role:
       statements:
         - Effect: Allow
           Action:
             - ssm:GetParameter
-          Resource: "arn:aws:ssm:us-east-1:895843392090:parameter/GITHUB_TOKEN"
+          Resource:
+            - "arn:aws:ssm:us-east-1:895843392090:parameter/GITHUB_TOKEN"
+            - "arn:aws:ssm:us-east-1:895843392090:parameter/GITHUB_WEBHOOK_SECRET"
 
 functions:
   webhook:
