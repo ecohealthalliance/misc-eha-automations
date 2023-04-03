@@ -1,12 +1,10 @@
 name: Add 'All' Team to New Repositories
 
 on:
-  check_suite:
-    types: [completed]
+  workflow_dispatch:
 
 jobs:
   add_all_team:
-    if: github.event_name == 'check_suite' && github.event.head_commit.message == 'Initial commit'
     runs-on: ubuntu-latest
     steps:
       - name: Get Team ID
@@ -15,7 +13,7 @@ jobs:
         with:
           github-token: ${{secrets.PAT}}
           script: |
-            const orgName = 'ecohealthalliance';
+            const orgName = 'ecohealthalliance'; // Replace with your organization name
             const teamName = 'All';
             const teams = await github.paginate(github.rest.teams.list, { org: orgName });
             const targetTeam = teams.find(team => team.name === teamName);
@@ -34,7 +32,7 @@ jobs:
           github-token: ${{secrets.PAT}}
           script: |
             const teamId = ${{ steps.get_team_id.outputs.id }};
-            const orgName = 'ecohealthalliance';
+            const orgName = 'ecohealthalliance'; // Replace with your organization name
             const teamRepos = await github.paginate(github.rest.teams.listRepos, { team_id: teamId });
             const orgRepos = await github.paginate(github.rest.repos.listForOrg, { org: orgName });
 
