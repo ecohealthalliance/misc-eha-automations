@@ -2,7 +2,7 @@ name: Add 'All' Team to New Repositories
 
 on:
   repository_dispatch:
-    types: [created_repo]
+    types: [created]
 
 jobs:
   add_all_team:

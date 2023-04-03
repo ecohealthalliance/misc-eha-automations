@@ -38,7 +38,7 @@ exports.handler = async (event) => {
     try {
       await axios.post(
         repoUrl,
-        { event_type: "repository_created" },
+        { event_type: "created_repo" },
         {
           headers: {
             Authorization: `token ${token}`,
@@ -67,3 +67,4 @@ exports.handler = async (event) => {
     };
   }
 };
+console.log("Payload:", payload);
