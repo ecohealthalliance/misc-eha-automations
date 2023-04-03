@@ -1,7 +1,7 @@
 name: Add 'All' Team to New Repositories
 
 on:
-  workflow_dispatch:
+  create:
 
 jobs:
   add_all_team:

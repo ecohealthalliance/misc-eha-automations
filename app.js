@@ -8,6 +8,14 @@ app.use(bodyParser.json());
 
 app.post("/webhook", async (req, res) => {
   const event = req.body;
+  const eventType = req.get("X-GitHub-Event"); // Get the event type from the header
+
+  // Respond to the ping event
+  if (eventType === "ping") {
+    res.sendStatus(200);
+    return;
+  }
+
   if (event.action === "created" && event.repository) {
     try {
       await triggerWorkflow(
