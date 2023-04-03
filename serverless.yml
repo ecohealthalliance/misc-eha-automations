@@ -3,8 +3,17 @@ service: webhook-lambda
 provider:
   name: aws
   runtime: nodejs16.x
-  stage: dev
-  region: us-east-1
+  stage: "dev"
+  region: "us-east-1"
+  environment:
+    GITHUB_TOKEN: ${ssm:/GITHUB_TOKEN}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - ssm:GetParameter
+          Resource: "arn:aws:ssm:us-east-1:895843392090:parameter/GITHUB_TOKEN"
 
 functions:
   webhook:
