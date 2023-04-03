@@ -10,7 +10,8 @@
       "stage": "dev",
       "region": "us-east-1",
       "environment": {
-        "GITHUB_TOKEN": "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"
+        "GITHUB_TOKEN": "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",
+        "GITHUB_WEBHOOK_SECRET": "71c7e3cb19b164b662551c20130e0e201bb99d1e89fdd683243e1f49e43dfc29"
       },
       "iam": {
         "role": {
@@ -20,7 +21,10 @@
               "Action": [
                 "ssm:GetParameter"
               ],
-              "Resource": "arn:aws:ssm:us-east-1:895843392090:parameter/GITHUB_TOKEN"
+              "Resource": [
+                "arn:aws:ssm:us-east-1:895843392090:parameter/GITHUB_TOKEN",
+                "arn:aws:ssm:us-east-1:895843392090:parameter/GITHUB_WEBHOOK_SECRET"
+              ]
             }
           ]
         }
@@ -193,7 +197,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/webhook-lambda/dev/1680550002360-2023-04-03T19:26:42.360Z/webhook-lambda.zip"
+                "S3Key": "serverless/webhook-lambda/dev/1680552208519-2023-04-03T20:03:28.519Z/webhook-lambda.zip"
               },
               "Handler": "app.handler",
               "Runtime": "nodejs16.x",
@@ -202,7 +206,8 @@
               "Timeout": 6,
               "Environment": {
                 "Variables": {
-                  "GITHUB_TOKEN": "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"
+                  "GITHUB_TOKEN": "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",
+                  "GITHUB_WEBHOOK_SECRET": "71c7e3cb19b164b662551c20130e0e201bb99d1e89fdd683243e1f49e43dfc29"
                 }
               },
               "Role": {
@@ -216,14 +221,14 @@
               "WebhookLogGroup"
             ]
           },
-          "WebhookLambdaVersionlKgXMRszLEK717VcUpSq84D1GgJ4VoJmZSSvGvF8s1A": {
+          "WebhookLambdaVersionw1rzJtlf2dNh81A8XkVWM0GiZa6onkFIgBSCsxWDxo": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "WebhookLambdaFunction"
               },
-              "CodeSha256": "0CnLlVtCL+qcbiR2z3bjnQkAxsyoTxZhTbmKpYP6bMc="
+              "CodeSha256": "H56v5+/z3GufrMLzXd5kU6Y1fh30likB8vPlpALWJUk="
             }
           },
           "ApiGatewayRestApi": {
@@ -299,7 +304,7 @@
               "WebhookLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1680549997713": {
+          "ApiGatewayDeployment1680552203465": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -361,7 +366,7 @@
           "WebhookLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "WebhookLambdaVersionlKgXMRszLEK717VcUpSq84D1GgJ4VoJmZSSvGvF8s1A"
+              "Ref": "WebhookLambdaVersionw1rzJtlf2dNh81A8XkVWM0GiZa6onkFIgBSCsxWDxo"
             },
             "Export": {
               "Name": "sls-webhook-lambda-dev-WebhookLambdaFunctionQualifiedArn"
@@ -501,7 +506,7 @@
         "timeout": 6,
         "runtime": "nodejs16.x",
         "vpc": {},
-        "versionLogicalId": "WebhookLambdaVersionlKgXMRszLEK717VcUpSq84D1GgJ4VoJmZSSvGvF8s1A"
+        "versionLogicalId": "WebhookLambdaVersionw1rzJtlf2dNh81A8XkVWM0GiZa6onkFIgBSCsxWDxo"
       }
     },
     "configValidationMode": "warn",
@@ -523,7 +528,7 @@
     "artifact": "/home/espira/Downloads/eh-server-tests/misc-eha-automations/.serverless/webhook-lambda.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/webhook-lambda/dev/1680550002360-2023-04-03T19:26:42.360Z",
+    "artifactDirectoryName": "serverless/webhook-lambda/dev/1680552208519-2023-04-03T20:03:28.519Z",
     "artifact": "webhook-lambda.zip"
   }
 }
