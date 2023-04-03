@@ -31,6 +31,8 @@ exports.handler = async (event) => {
   const githubEvent = event.headers["X-GitHub-Event"];
   const payload = JSON.parse(event.body);
 
+  console.log("Payload:", payload);
+
   if (githubEvent === "create" && payload.ref_type === "repository") {
     const repoFullName = payload.repository.full_name;
     const repoUrl = `https://api.github.com/repos/${repoFullName}/dispatches`;
@@ -38,7 +40,7 @@ exports.handler = async (event) => {
     try {
       await axios.post(
         repoUrl,
-        { event_type: "created_repo" },
+        { event_type: "created" },
         {
           headers: {
             Authorization: `token ${token}`,
@@ -67,4 +69,3 @@ exports.handler = async (event) => {
     };
   }
 };
-console.log("Payload:", payload);
