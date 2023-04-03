@@ -1,0 +1,18 @@
+{
+  "name": "github-webhook-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "aws-serverless-express": "^3.4.0",
+    "axios": "^0.26.1",
+    "body-parser": "^1.19.1",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "serverless-offline": "^12.0.4"
+  }
+}

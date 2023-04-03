@@ -1,0 +1,18 @@
+service: webhook-lambda
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  stage: dev
+  region: us-east-1
+
+functions:
+  webhook:
+    handler: app.handler
+    events:
+      - http:
+          path: webhook
+          method: post
+
+plugins:
+  - serverless-offline
