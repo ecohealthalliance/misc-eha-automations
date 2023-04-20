@@ -1,0 +1,20 @@
+name: Dispatch Workflow for Repository Creation
+
+on:
+  create:
+    types: [repository]
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Send repository_dispatch event
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        curl -X POST \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: token $GITHUB_TOKEN" \
+        -H "Content-Type: application/json" \
+        --data '{"event_type": "repository_created", "client_payload": {"repository_full_name": "'${{ github.event.repository.full_name }}'", "organization_id": '${{ github.event.organization.id }}'}}' \
+        ${{ secrets.WEBHOOK_URL }}
