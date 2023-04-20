@@ -1,71 +1,76 @@
+const https = require("https");
 const crypto = require("crypto");
-const axios = require("axios");
 
 const secret = process.env.GITHUB_WEBHOOK_SECRET;
 const token = process.env.GITHUB_TOKEN;
-
-function verifySignature(event) {
-  const signature = event.headers["X-Hub-Signature-256"];
-  const hmac = crypto.createHmac("sha256", secret);
-  hmac.update(event.body);
-  const expectedSignature = "sha256=" + hmac.digest("hex");
-
-  return signature === expectedSignature;
-}
+const repositoryOwner = process.env.REPOSITORY_OWNER;
+const repositoryName = process.env.REPOSITORY_NAME;
 
 exports.handler = async (event) => {
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      body: "Method Not Allowed",
-    };
-  }
+  const signature = event.headers["X-Hub-Signature-256"];
+  const expectedSignature = `sha256=${crypto
+    .createHmac("sha256", secret)
+    .update(event.body)
+    .digest("hex")}`;
 
-  if (!verifySignature(event)) {
+  if (signature !== expectedSignature) {
     return {
       statusCode: 401,
-      body: "Invalid signature",
+      body: "Unauthorized",
     };
   }
 
-  const githubEvent = event.headers["X-GitHub-Event"];
   const payload = JSON.parse(event.body);
+  const branchName = payload.ref.split("/").pop();
 
-  console.log("Payload:", payload);
-
-  if (githubEvent === "create" && payload.ref_type === "repository") {
-    const repoFullName = payload.repository.full_name;
-    const repoUrl = `https://api.github.com/repos/${repoFullName}/dispatches`;
-
-    try {
-      await axios.post(
-        repoUrl,
-        { event_type: "created" },
-        {
-          headers: {
-            Authorization: `token ${token}`,
-            Accept: "application/vnd.github.everest-preview+json",
-          },
-        }
-      );
-
-      console.log(`Dispatched repository_created event for ${repoFullName}`);
-
-      return {
-        statusCode: 200,
-        body: "OK",
-      };
-    } catch (error) {
-      console.error("Error dispatching event:", error.message);
-      return {
-        statusCode: 500,
-        body: "Internal Server Error",
-      };
-    }
-  } else {
+  if (
+    payload.repository.name !== repositoryName ||
+    payload.repository.owner.login !== repositoryOwner ||
+    branchName !== "main"
+  ) {
     return {
       statusCode: 200,
-      body: "OK",
+      body: "Ignoring non-relevant event",
     };
   }
+
+  const options = {
+    hostname: "api.github.com",
+    path: `/repos/${repositoryOwner}/${repositoryName}/actions/workflows/add_all_team_to_new_repos.yml/dispatches`,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/vnd.github.v3+json",
+      Authorization: `Bearer ${token}`,
+      "User-Agent": "Lambda",
+    },
+  };
+
+  const response = await new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      let responseBody = "";
+      res.on("data", (chunk) => {
+        responseBody += chunk;
+      });
+      res.on("end", () => {
+        resolve({
+          statusCode: res.statusCode,
+          body: responseBody,
+        });
+      });
+    });
+
+    req.on("error", (error) => {
+      reject(error);
+    });
+
+    const data = JSON.stringify({
+      ref: branchName,
+    });
+
+    req.write(data);
+    req.end();
+  });
+
+  return response;
 };

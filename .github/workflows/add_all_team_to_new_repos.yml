@@ -1,55 +1,19 @@
-name: Add 'All' Team to New Repositories
+name: Add All Team to New Repository
 
 on:
   repository_dispatch:
-    types: [created]
+    types: [repository_created]
 
 jobs:
   add_all_team:
     runs-on: ubuntu-latest
     steps:
-      - name: Get Team ID
-        id: get_team_id
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{secrets.PAT}}
-          script: |
-            const orgName = 'ecohealthalliance'; // Replace with your organization name
-            const teamName = 'All';
-            const teams = await github.paginate(github.rest.teams.list, { org: orgName });
-            const targetTeam = teams.find(team => team.name === teamName);
-            if (targetTeam) {
-              console.log(`Team ID for "${teamName}" is: ${targetTeam.id}`);
-              return { id: targetTeam.id };
-            } else {
-              console.log(`Team "${teamName}" not found.`);
-              return { id: null };
-            }
-
-      - name: Add 'All' Team to New Repos
-        if: steps.get_team_id.outputs.id != null
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{secrets.PAT}}
-          script: |
-            const teamId = ${{ steps.get_team_id.outputs.id }};
-            const orgName = 'ecohealthalliance'; // Replace with your organization name
-            const teamRepos = await github.paginate(github.rest.teams.listRepos, { team_id: teamId });
-            const orgRepos = await github.paginate(github.rest.repos.listForOrg, { org: orgName });
-
-            const teamRepoNames = teamRepos.map(repo => repo.full_name);
-            const newRepos = orgRepos.filter(repo => !teamRepoNames.includes(repo.full_name));
-
-            for (const repo of newRepos) {
-              const repoFullName = repo.full_name;
-              const endpt = `https://api.github.com/teams/${teamId}/repos/${repoFullName}`;
-              const payload = { permission: 'pull' };
-              const response = await github.request('PUT ' + endpt, {
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/vnd.github.hellcat-preview+json'
-                },
-                data: JSON.stringify(payload)
-              });
-              console.log(`Added 'All' team to ${repoFullName}`);
-            }
+    - name: Add All team to the new repository
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TEAM_ID: 2981406
+      run: |
+        curl -X PUT \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: token $GITHUB_TOKEN" \
+        https://api.github.com/organizations/${{ github.event.client_payload.organization_id }}/team/$TEAM_ID/repos/${{ github.event.client_payload.repository_full_name }}
